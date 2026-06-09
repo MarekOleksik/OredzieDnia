@@ -10,11 +10,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
-import java.util.Calendar
-import java.util.concurrent.TimeUnit
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,9 +27,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.ui.window.Dialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -92,7 +96,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        scheduleDailyNotification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) {
@@ -128,25 +131,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun scheduleDailyNotification() {
-        val now = Calendar.getInstance()
-        val next8AM = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 8)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-            if (!after(now)) add(Calendar.DAY_OF_MONTH, 1)
-        }
-        val delay = next8AM.timeInMillis - now.timeInMillis
-        val request = PeriodicWorkRequestBuilder<DailyNotificationWorker>(1, TimeUnit.DAYS)
-            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-            .build()
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "daily_apparition",
-            ExistingPeriodicWorkPolicy.KEEP,
-            request
-        )
-    }
 }
 
 private fun shareApparition(context: Context, apparition: Apparition) {
@@ -167,22 +151,39 @@ private fun shareApparition(context: Context, apparition: Apparition) {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
     onBrowseClick: () -> Unit = {},
-    viewModel: MainViewModel = viewModel()
+    viewModel: MainViewModel = viewModel(),
+    notifViewModel: NotificationSettingsViewModel = viewModel()
 ) {
     val apparition by viewModel.currentApparition.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessageRes by viewModel.errorMessageRes.collectAsState()
     val context = LocalContext.current
+    val notifSettings by notifViewModel.settings.collectAsState()
+    var showNotifSettings by remember { mutableStateOf(false) }
+
+    notifViewModel.scheduleIfNeeded()
 
     val subtitle = remember(apparition) {
         listOfNotNull(
             apparition?.location?.takeIf { it.isNotBlank() },
             apparition?.date?.takeIf { it.isNotBlank() }
         ).joinToString(separator = " • ")
+    }
+
+    if (showNotifSettings) {
+        NotificationSettingsDialog(
+            settings = notifSettings,
+            onSave = { enabled, hour, minute ->
+                notifViewModel.save(enabled, hour, minute)
+                showNotifSettings = false
+            },
+            onDismiss = { showNotifSettings = false }
+        )
     }
 
     Box(
@@ -199,6 +200,17 @@ fun MainScreen(
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
+        IconButton(
+            onClick = { showNotifSettings = true },
+            modifier = Modifier.align(Alignment.TopEnd)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Notifications,
+                contentDescription = stringResource(R.string.content_description_notification_settings),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -337,6 +349,73 @@ fun MainScreen(
                             contentDescription = stringResource(R.string.content_description_share),
                             modifier = Modifier.size(20.dp)
                         )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NotificationSettingsDialog(
+    settings: NotificationSettings,
+    onSave: (enabled: Boolean, hour: Int, minute: Int) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var enabled by remember { mutableStateOf(settings.enabled) }
+    val timePickerState = rememberTimePickerState(
+        initialHour = settings.hour,
+        initialMinute = settings.minute,
+        is24Hour = true
+    )
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        ) {
+            Column(modifier = Modifier.padding(24.dp)) {
+                Text(
+                    text = "Powiadomienie dzienne",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Włącz codzienne orędzie", style = MaterialTheme.typography.bodyLarge)
+                    Switch(checked = enabled, onCheckedChange = { enabled = it })
+                }
+                if (enabled) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = "Godzina powiadomienia",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    TimePicker(
+                        state = timePickerState,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = onDismiss) { Text("Anuluj") }
+                    Spacer(Modifier.width(8.dp))
+                    TextButton(onClick = {
+                        onSave(enabled, timePickerState.hour, timePickerState.minute)
+                    }) {
+                        Text("Zapisz", fontWeight = FontWeight.SemiBold)
                     }
                 }
             }

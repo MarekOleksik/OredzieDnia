@@ -22,6 +22,7 @@
     <string name="content_description_share">Udostępnij</string>
     <string name="detail_title">Treść orędzia</string>
 
+    <string name="content_description_notification_settings">Ustawienia powiadomień</string>
     <string name="notification_channel_name">Orędzie dnia</string>
     <string name="notification_channel_description">Codzienne orędzie maryjne o 8:00</string>
 

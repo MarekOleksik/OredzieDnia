@@ -1,6 +1,6 @@
 # Polityka Prywatności — Orędzie Dnia
 
-*Ostatnia aktualizacja: 9 czerwca 2026 r.*
+*Ostatnia aktualizacja: 9 czerwca 2026 r. (wersja 2)*
 
 ## 1. Informacje ogólne
 
@@ -15,7 +15,7 @@ Aplikacja:
 - nie zbiera imienia, adresu e-mail, numeru telefonu ani żadnych innych danych identyfikujących użytkownika,
 - nie korzysta z usług analitycznych ani śledzących (brak Google Analytics, Firebase itp.),
 - nie wyświetla reklam,
-- nie przechowuje żadnych danych na urządzeniu użytkownika.
+- przechowuje lokalnie na urządzeniu wyłącznie anonimowe preferencje aplikacji: czy powiadomienia są włączone oraz o której godzinie mają być wyświetlane. Dane te nie zawierają żadnych informacji osobowych i nigdy nie są przesyłane poza urządzenie.
 
 ## 3. Połączenie z internetem
 
@@ -29,8 +29,7 @@ Aplikacja korzysta z następujących uprawnień systemowych:
 |---|---|
 | `INTERNET` | Pobieranie orędzi z bazy danych |
 | `ACCESS_NETWORK_STATE` | Sprawdzanie dostępności połączenia |
-
-Żadne inne uprawnienia nie są wymagane ani używane.
+| `POST_NOTIFICATIONS` | Wyświetlanie codziennych powiadomień z orędzie (opcjonalne, użytkownik może odmówić) |
 
 ## 5. Usługi zewnętrzne
 

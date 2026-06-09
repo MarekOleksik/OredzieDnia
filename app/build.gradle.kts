@@ -76,6 +76,9 @@ dependencies {
     implementation(libs.supabase.kt)
     implementation(libs.supabase.postgrest)
     
+    // WorkManager
+    implementation(libs.androidx.work.runtime.ktx)
+
     // Ktor
     implementation(libs.ktor.client.android)
     implementation(libs.ktor.client.content.negotiation)

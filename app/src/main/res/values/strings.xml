@@ -19,7 +19,11 @@
     <string name="browse_empty_results">Brak orędzi spełniających wybrane kryteria.</string>
     <string name="browse_select_filters_hint">Wybierz przynajmniej miejscowość i rok, aby zobaczyć listę orędzi.</string>
     <string name="content_description_back">Wstecz</string>
+    <string name="content_description_share">Udostępnij</string>
     <string name="detail_title">Treść orędzia</string>
+
+    <string name="notification_channel_name">Orędzie dnia</string>
+    <string name="notification_channel_description">Codzienne orędzie maryjne o 8:00</string>
 
     <string-array name="month_names">
         <item>Styczeń</item>

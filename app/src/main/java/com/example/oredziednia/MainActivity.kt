@@ -1,9 +1,20 @@
 package com.example.oredziednia
 
+import android.Manifest
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import java.util.Calendar
+import java.util.concurrent.TimeUnit
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +33,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -40,6 +52,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
@@ -72,8 +85,19 @@ private sealed interface Screen {
 }
 
 class MainActivity : ComponentActivity() {
+
+    private val requestNotificationPermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { /* kontynuuj niezależnie od decyzji */ }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        scheduleDailyNotification()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
         enableEdgeToEdge()
         setContent {
             OredzieDniaTheme {
@@ -103,6 +127,44 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun scheduleDailyNotification() {
+        val now = Calendar.getInstance()
+        val next8AM = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 8)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+            if (!after(now)) add(Calendar.DAY_OF_MONTH, 1)
+        }
+        val delay = next8AM.timeInMillis - now.timeInMillis
+        val request = PeriodicWorkRequestBuilder<DailyNotificationWorker>(1, TimeUnit.DAYS)
+            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+            .build()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "daily_apparition",
+            ExistingPeriodicWorkPolicy.KEEP,
+            request
+        )
+    }
+}
+
+private fun shareApparition(context: Context, apparition: Apparition) {
+    val text = buildString {
+        appendLine(apparition.name)
+        appendLine("${apparition.location} • ${apparition.date}")
+        appendLine()
+        append(apparition.message)
+    }
+    context.startActivity(
+        Intent.createChooser(
+            Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, text)
+            },
+            null
+        )
+    )
 }
 
 @Composable
@@ -114,6 +176,7 @@ fun MainScreen(
     val apparition by viewModel.currentApparition.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessageRes by viewModel.errorMessageRes.collectAsState()
+    val context = LocalContext.current
 
     val subtitle = remember(apparition) {
         listOfNotNull(
@@ -260,6 +323,21 @@ fun MainScreen(
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.browse_button).uppercase(), fontWeight = FontWeight.SemiBold)
+                }
+
+                if (apparition != null && !isLoading && errorMessageRes == null) {
+                    OutlinedButton(
+                        onClick = { shareApparition(context, apparition!!) },
+                        modifier = Modifier.height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = stringResource(R.string.content_description_share),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }

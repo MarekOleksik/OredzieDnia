@@ -1,0 +1,38 @@
+<resources>
+    <string name="app_name">Oredzie Dnia</string>
+
+    <string name="welcome_title">Witaj</string>
+    <string name="welcome_message">Kliknij przycisk, aby wylosować orędzie na dziś.</string>
+    <string name="draw_button">Losuj na dziś</string>
+    <string name="loading_message">Losowanie orędzia…</string>
+    <string name="error_fetch_failed">Nie udało się pobrać orędzia. Sprawdź połączenie z internetem i spróbuj ponownie.</string>
+    <string name="error_no_apparitions">Brak orędzi w bazie danych.</string>
+
+    <string name="browse_button">Przeglądaj orędzia</string>
+    <string name="browse_title">Przeglądaj orędzia</string>
+    <string name="browse_filters_hint">Wybierz miejscowość, rok i (opcjonalnie) miesiąc objawienia.</string>
+    <string name="filter_location_label">Miejscowość</string>
+    <string name="filter_year_label">Rok</string>
+    <string name="filter_month_label">Miesiąc</string>
+    <string name="filter_all">Wszystkie</string>
+    <string name="browse_results_count">Znalezione orędzia: %1$d</string>
+    <string name="browse_empty_results">Brak orędzi spełniających wybrane kryteria.</string>
+    <string name="browse_select_filters_hint">Wybierz przynajmniej miejscowość i rok, aby zobaczyć listę orędzi.</string>
+    <string name="content_description_back">Wstecz</string>
+    <string name="detail_title">Treść orędzia</string>
+
+    <string-array name="month_names">
+        <item>Styczeń</item>
+        <item>Luty</item>
+        <item>Marzec</item>
+        <item>Kwiecień</item>
+        <item>Maj</item>
+        <item>Czerwiec</item>
+        <item>Lipiec</item>
+        <item>Sierpień</item>
+        <item>Wrzesień</item>
+        <item>Październik</item>
+        <item>Listopad</item>
+        <item>Grudzień</item>
+    </string-array>
+</resources>

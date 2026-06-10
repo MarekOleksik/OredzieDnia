@@ -20,7 +20,9 @@ This is a standard Gradle/Android Studio project (Kotlin DSL build scripts, vers
 - Run a single test class: `./gradlew testDebugUnitTest --tests "com.example.oredziednia.ExampleUnitTest"`
 - Lint: `./gradlew lint`
 
-The package/namespace is `com.example.oredziednia`; module name is `app`; min SDK 24, target/compile SDK 36.
+The code package/namespace is `com.example.oredziednia`, but the Play Store `applicationId` is
+`io.github.marekoleksik.oredziednia` (Play rejects `com.example.*`); module name is `app`; min SDK 24,
+target/compile SDK 36.
 
 ## Architecture
 

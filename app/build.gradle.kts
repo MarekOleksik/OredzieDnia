@@ -18,7 +18,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.oredziednia"
+        applicationId = "io.github.marekoleksik.oredziednia"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

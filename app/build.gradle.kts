@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.google.services)
 }
 
 // Supabase credentials are kept in local.properties (not checked into VCS) so they
@@ -83,6 +84,10 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     // DataStore
     implementation(libs.androidx.datastore.preferences)
+
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
 
     // Ktor
     implementation(libs.ktor.client.android)

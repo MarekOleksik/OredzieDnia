@@ -69,6 +69,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.oredziednia.ui.theme.OredzieDniaTheme
+import com.google.firebase.messaging.FirebaseMessaging
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 
@@ -103,6 +104,7 @@ class MainActivity : ComponentActivity() {
             requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
         enableEdgeToEdge()
+        FirebaseMessaging.getInstance().subscribeToTopic("new_apparitions")
         val notifiedApparition = intent.apparitionExtra()
         setContent {
             OredzieDniaTheme {

@@ -1,5 +1,9 @@
 # Historia wersji — Orędzie Dnia
 
+## 1.2.0 (versionCode 5)
+- Powiadomienia push dla wszystkich użytkowników po dodaniu nowego orędzia do bazy
+- Kliknięcie w powiadomienie push otwiera aplikację i wyświetla nowe orędzie
+
 ## 1.1.0 (versionCode 4)
 - Kliknięcie w codzienne powiadomienie otwiera aplikację i od razu wyświetla orędzie z powiadomienia
 - Tytuł i data orędzia pozostają teraz na stałym miejscu podczas przewijania długich tekstów (ekran główny i ekran szczegółów)

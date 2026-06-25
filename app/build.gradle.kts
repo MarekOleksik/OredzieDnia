@@ -22,8 +22,8 @@ android {
         applicationId = "io.github.marekoleksik.oredziednia"
         minSdk = 24
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.1.0"
+        versionCode = 5
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -53,6 +53,10 @@ android {
             }
         }
     }
+    lint {
+        disable += "InvalidFragmentVersionForActivityResult"
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11

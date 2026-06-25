@@ -14,6 +14,24 @@ import java.util.Calendar
 const val NOTIFICATION_CHANNEL_ID = "daily_apparition"
 private const val NOTIFICATION_ID = 1
 
+const val EXTRA_APPARITION_ID = "apparition_id"
+const val EXTRA_APPARITION_NAME = "apparition_name"
+const val EXTRA_APPARITION_LOCATION = "apparition_location"
+const val EXTRA_APPARITION_MESSAGE = "apparition_message"
+const val EXTRA_APPARITION_DATE = "apparition_date"
+
+fun Intent.apparitionExtra(): Apparition? {
+    val name = getStringExtra(EXTRA_APPARITION_NAME) ?: return null
+    val id = getIntExtra(EXTRA_APPARITION_ID, -1)
+    return Apparition(
+        id = if (id == -1) null else id,
+        name = name,
+        location = getStringExtra(EXTRA_APPARITION_LOCATION) ?: "",
+        message = getStringExtra(EXTRA_APPARITION_MESSAGE) ?: "",
+        date = getStringExtra(EXTRA_APPARITION_DATE) ?: ""
+    )
+}
+
 class DailyNotificationWorker(
     private val context: Context,
     params: WorkerParameters
@@ -34,6 +52,11 @@ class DailyNotificationWorker(
             context, 0,
             Intent(context, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                putExtra(EXTRA_APPARITION_ID, apparition.id ?: -1)
+                putExtra(EXTRA_APPARITION_NAME, apparition.name)
+                putExtra(EXTRA_APPARITION_LOCATION, apparition.location)
+                putExtra(EXTRA_APPARITION_MESSAGE, apparition.message)
+                putExtra(EXTRA_APPARITION_DATE, apparition.date)
             },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )

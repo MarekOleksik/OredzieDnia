@@ -50,6 +50,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -102,6 +103,7 @@ class MainActivity : ComponentActivity() {
             requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
         enableEdgeToEdge()
+        val notifiedApparition = intent.apparitionExtra()
         setContent {
             OredzieDniaTheme {
                 var screen by remember { mutableStateOf<Screen>(Screen.Home) }
@@ -111,7 +113,8 @@ class MainActivity : ComponentActivity() {
                     when (val current = screen) {
                         is Screen.Home -> MainScreen(
                             modifier = content,
-                            onBrowseClick = { screen = Screen.Browse }
+                            onBrowseClick = { screen = Screen.Browse },
+                            initialApparition = notifiedApparition
                         )
 
                         is Screen.Browse -> BrowseScreen(
@@ -156,6 +159,7 @@ private fun shareApparition(context: Context, apparition: Apparition) {
 fun MainScreen(
     modifier: Modifier = Modifier,
     onBrowseClick: () -> Unit = {},
+    initialApparition: Apparition? = null,
     viewModel: MainViewModel = viewModel(),
     notifViewModel: NotificationSettingsViewModel = viewModel()
 ) {
@@ -167,6 +171,10 @@ fun MainScreen(
     var showNotifSettings by remember { mutableStateOf(false) }
 
     notifViewModel.scheduleIfNeeded()
+
+    LaunchedEffect(initialApparition) {
+        initialApparition?.let { viewModel.setApparition(it) }
+    }
 
     val subtitle = remember(apparition) {
         listOfNotNull(
@@ -197,8 +205,7 @@ fun MainScreen(
                     )
                 )
             )
-            .padding(24.dp),
-        contentAlignment = Alignment.Center
+            .padding(24.dp)
     ) {
         IconButton(
             onClick = { showNotifSettings = true },
@@ -212,21 +219,25 @@ fun MainScreen(
         }
 
         Column(
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
+            // Odstęp zarezerwowany pod dzwoneczek, żeby karta nigdy go nie zasłaniała.
+            Spacer(modifier = Modifier.height(48.dp))
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f, fill = false),
+                    .weight(1f),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
                 Column(
                     modifier = Modifier
-                        .padding(32.dp)
-                        .verticalScroll(rememberScrollState()),
+                        .fillMaxSize()
+                        .padding(32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
@@ -253,42 +264,58 @@ fun MainScreen(
 
                     HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
 
-                    when {
-                        isLoading -> {
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .padding(top = 24.dp)
-                                    .size(32.dp),
-                                color = MaterialTheme.colorScheme.primary,
-                                strokeWidth = 3.dp
-                            )
-                            Text(
-                                text = stringResource(R.string.loading_message),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(top = 12.dp)
-                            )
-                        }
+                    // Reszta karty (treść orędzia) skrolluje się we własnym, ograniczonym
+                    // wysokością obszarze, żeby tytuł/dzwoneczek zawsze były widoczne.
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .verticalScroll(rememberScrollState()),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            when {
+                                isLoading -> {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier
+                                            .padding(top = 24.dp)
+                                            .size(32.dp),
+                                        color = MaterialTheme.colorScheme.primary,
+                                        strokeWidth = 3.dp
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.loading_message),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(top = 12.dp)
+                                    )
+                                }
 
-                        errorMessageRes != null -> {
-                            Text(
-                                text = stringResource(errorMessageRes!!),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.error,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(top = 16.dp)
-                            )
-                        }
+                                errorMessageRes != null -> {
+                                    Text(
+                                        text = stringResource(errorMessageRes!!),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.error,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.padding(top = 16.dp)
+                                    )
+                                }
 
-                        else -> {
-                            Text(
-                                text = apparition?.message ?: stringResource(R.string.welcome_message),
-                                style = MaterialTheme.typography.bodyLarge.copy(
-                                    lineHeight = 28.sp
-                                ),
-                                modifier = Modifier.padding(top = 16.dp),
-                                textAlign = TextAlign.Center
-                            )
+                                else -> {
+                                    Text(
+                                        text = apparition?.message ?: stringResource(R.string.welcome_message),
+                                        style = MaterialTheme.typography.bodyLarge.copy(
+                                            lineHeight = 28.sp
+                                        ),
+                                        modifier = Modifier.padding(top = 16.dp),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
                         }
                     }
                 }

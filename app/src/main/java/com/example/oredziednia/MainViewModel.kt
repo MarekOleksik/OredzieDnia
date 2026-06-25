@@ -19,6 +19,11 @@ class MainViewModel(
     private val _errorMessageRes = MutableStateFlow<Int?>(null)
     val errorMessageRes: StateFlow<Int?> = _errorMessageRes.asStateFlow()
 
+    fun setApparition(apparition: Apparition) {
+        _errorMessageRes.value = null
+        _currentApparition.value = apparition
+    }
+
     fun getRandomApparition() {
         if (_isLoading.value) return
 

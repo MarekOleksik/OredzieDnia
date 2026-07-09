@@ -8,7 +8,7 @@
     <string name="error_fetch_failed">Nie udało się pobrać orędzia. Sprawdź połączenie z internetem i spróbuj ponownie.</string>
     <string name="error_no_apparitions">Brak orędzi w bazie danych.</string>
 
-    <string name="browse_button">Przeglądaj orędzia</string>
+    <string name="browse_button">Przeglądaj</string>
     <string name="browse_title">Przeglądaj orędzia</string>
     <string name="browse_filters_hint">Wybierz miejscowość, rok i (opcjonalnie) miesiąc objawienia.</string>
     <string name="filter_location_label">Miejscowość</string>

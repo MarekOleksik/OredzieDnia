@@ -24,6 +24,11 @@ class MainViewModel(
         _currentApparition.value = apparition
     }
 
+    fun clearApparition() {
+        _errorMessageRes.value = null
+        _currentApparition.value = null
+    }
+
     fun getRandomApparition() {
         if (_isLoading.value) return
 

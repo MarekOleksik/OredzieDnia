@@ -1,5 +1,10 @@
 # Historia wersji — Orędzie Dnia
 
+## 1.2.1 (versionCode 6)
+- Nowa ikona aplikacji (złoty monogram maryjny na granatowym tle) zamiast domyślnej ikony Androida
+- Naprawiono łamanie tekstu na przyciskach na mniejszych ekranach (etykieta "Przeglądaj" mieści się w jednej linii)
+- Systemowy przycisk wstecz nie zamyka już aplikacji z ekranu przeglądania ani z wylosowanego orędzia — wraca do poprzedniego ekranu
+
 ## 1.2.0 (versionCode 5)
 - Powiadomienia push dla wszystkich użytkowników po dodaniu nowego orędzia do bazy
 - Kliknięcie w powiadomienie push otwiera aplikację i wyświetla nowe orędzie

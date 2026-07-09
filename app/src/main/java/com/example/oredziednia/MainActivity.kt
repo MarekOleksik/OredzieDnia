@@ -7,12 +7,14 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,9 +28,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -110,6 +110,13 @@ class MainActivity : ComponentActivity() {
             OredzieDniaTheme {
                 var screen by remember { mutableStateOf<Screen>(Screen.Home) }
 
+                BackHandler(enabled = screen != Screen.Home) {
+                    screen = when (screen) {
+                        is Screen.Detail -> Screen.Browse
+                        else -> Screen.Home
+                    }
+                }
+
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     val content = Modifier.padding(innerPadding)
                     when (val current = screen) {
@@ -173,6 +180,10 @@ fun MainScreen(
     var showNotifSettings by remember { mutableStateOf(false) }
 
     notifViewModel.scheduleIfNeeded()
+
+    BackHandler(enabled = apparition != null || errorMessageRes != null) {
+        viewModel.clearApparition()
+    }
 
     LaunchedEffect(initialApparition) {
         initialApparition?.let { viewModel.setApparition(it) }
@@ -324,13 +335,17 @@ fun MainScreen(
             }
 
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Button(
                     onClick = { viewModel.getRandomApparition() },
                     enabled = !isLoading,
-                    modifier = Modifier.height(56.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp),
                     shape = RoundedCornerShape(16.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
                 ) {
@@ -340,30 +355,31 @@ fun MainScreen(
                             color = MaterialTheme.colorScheme.onPrimary,
                             strokeWidth = 2.dp
                         )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
+                        Spacer(Modifier.width(8.dp))
                     }
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.draw_button).uppercase(), fontWeight = FontWeight.SemiBold)
+                    Text(
+                        stringResource(R.string.draw_button).uppercase(),
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        softWrap = false
+                    )
                 }
 
                 OutlinedButton(
                     onClick = onBrowseClick,
-                    modifier = Modifier.height(56.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp),
                     shape = RoundedCornerShape(16.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.List,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
+                    Text(
+                        stringResource(R.string.browse_button).uppercase(),
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        softWrap = false
                     )
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.browse_button).uppercase(), fontWeight = FontWeight.SemiBold)
                 }
 
                 if (apparition != null && !isLoading && errorMessageRes == null) {

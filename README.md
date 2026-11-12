@@ -13,6 +13,7 @@ Aplikacja pobiera orędzia z bazy danych Supabase i prezentuje je w przejrzystym
 - **Losowanie orędzia** — jedno naciśnięcie, nowe przesłanie na dziś
 - **Przeglądarka archiwum** — filtrowanie po miejscu objawienia, roku i miesiącu
 - **Widok szczegółowy** — pełna treść wybranego orędzia
+- **Panel administracyjny** - https://marekoleksik.github.io/oredzia-admin/ 
 
 ## Wymagania
 
